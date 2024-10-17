@@ -2,6 +2,7 @@ package com.lowekumar.springbootweb.springbootweb.services;
 
 import com.lowekumar.springbootweb.springbootweb.dto.EmployeeDTO;
 import com.lowekumar.springbootweb.springbootweb.entities.EmployeeEntity;
+import com.lowekumar.springbootweb.springbootweb.exceptions.ResourceNotFoundException;
 import com.lowekumar.springbootweb.springbootweb.repositories.EmployeeRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.util.ReflectionUtils;
@@ -45,31 +46,31 @@ public class EmployeeService {
 
     }
 
-    public EmployeeDTO updateEmployeeById(EmployeeDTO employeeDTO, Long id) {
+    public EmployeeDTO updateEmployeeById(EmployeeDTO employeeDTO, Long employeeId) {
+        isExistEmployeeById(employeeId);
         EmployeeEntity employeeEntity = modelMapper.map(employeeDTO, EmployeeEntity.class);
-        employeeEntity.setId(id);
+        employeeEntity.setId(employeeId);
         EmployeeEntity savedEmployeeEntity = employeeRepository.save(employeeEntity);
         EmployeeDTO updatedEmployeeDTO = modelMapper.map(savedEmployeeEntity, EmployeeDTO.class);
         return updatedEmployeeDTO;
 
     }
 
-    public boolean isExistEmployeeById(Long id) {
-        return employeeRepository.existsById(id);
+    public void isExistEmployeeById(Long id) {
+        boolean exists = employeeRepository.existsById(id);
+        if(!exists) throw new ResourceNotFoundException("Employee not found with id : "+id);
 
     }
     public boolean deleteEmployeeById(Long employee_id)
     {
-        boolean exist = isExistEmployeeById(employee_id);
-        if (!exist) return false;
+        isExistEmployeeById(employee_id);
         employeeRepository.deleteById(employee_id);
         return true;
     }
 
     public EmployeeDTO updatePartialEmployeeById(Map<String, Object> updates, Long employeeId)
     {
-        boolean exist = isExistEmployeeById(employeeId);
-        if(!exist) return null;
+        isExistEmployeeById( employeeId);
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).get();
         // using Reflection below concept now to change the object partially
         updates.forEach((field, value)->{

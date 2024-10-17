@@ -17,7 +17,7 @@ public class EmployeeDTO {
 
     private Long id;
 
-    @NotNull(message = "Required Field")
+    @NotNull(message = "Name is a Required Field")
     private String name;
 
     @Email(message ="Enter valid email only")

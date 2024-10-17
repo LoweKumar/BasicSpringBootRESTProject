@@ -1,8 +1,9 @@
 package com.lowekumar.springbootweb.springbootweb.controllers;
 
 import com.lowekumar.springbootweb.springbootweb.dto.EmployeeDTO;
-import com.lowekumar.springbootweb.springbootweb.entities.EmployeeEntity;
-import com.lowekumar.springbootweb.springbootweb.repositories.EmployeeRepository;
+//import com.lowekumar.springbootweb.springbootweb.entities.EmployeeEntity;
+import com.lowekumar.springbootweb.springbootweb.exceptions.ResourceNotFoundException;
+//import com.lowekumar.springbootweb.springbootweb.repositories.EmployeeRepository;
 import com.lowekumar.springbootweb.springbootweb.services.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 //import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+//import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+//import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -31,13 +33,16 @@ public class EmployeeController {
     public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable(name = "employee_id") Long id){
 //        return new EmployeeDTO(id, "Lowe", "lowe@gmail.com",28, "Developer", 9000000.00, LocalDate.of(2024, 12, 12), true);
         Optional<EmployeeDTO> employeeDTO = employeeService.getEmployeeById(id);
-        return employeeDTO.map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1))
-                .orElse(ResponseEntity.notFound().build());
+        return employeeDTO
+                .map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1))
+                //.orElse(ResponseEntity.notFound().build());
+                .orElseThrow(()-> new ResourceNotFoundException("Employee not found with id:"+ id));
     }
 
+
     @GetMapping()
-    public ResponseEntity<List<EmployeeDTO>> getAllEmployee(@RequestParam(required = false, name="inputName") String name,
-                                               @RequestParam(required = false, name="inputAge") Integer age){
+    public ResponseEntity<List<EmployeeDTO>> getAllEmployee(@RequestParam(required = false, name="inputName") String inputName,
+                                               @RequestParam(required = false, name="inputAge") Integer inputAge){
         return ResponseEntity.ok(employeeService.getAllEmployees());
     }
 
@@ -48,7 +53,7 @@ public class EmployeeController {
     }
 
     @PutMapping(path = "/{employee_id}")
-    public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody EmployeeDTO employeeDTO, @PathVariable Long employee_id){
+    public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody @Valid EmployeeDTO employeeDTO, @PathVariable Long employee_id){
         return ResponseEntity.ok(employeeService.updateEmployeeById(employeeDTO, employee_id));
 
     }
@@ -68,6 +73,5 @@ public class EmployeeController {
         EmployeeDTO employeeDTO = employeeService.updatePartialEmployeeById(updates, employee_id);
         if(employeeDTO == null)return ResponseEntity.notFound().build();
         return ResponseEntity.ok(employeeDTO);
-
     }
 }
